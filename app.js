@@ -39,6 +39,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadBooks();
 });
 
+// --- VERİ YÜKLEME (CACHE-BUSTING / ÖNBELLEK KIRMA) ---
+async function loadBooks() {
+    try {
+        // Her istekte benzersiz bir zaman damgası ekliyoruz ve no-store emri veriyoruz.
+        // Bu sayede tarayıcı eski JSON dosyasını ASLA kullanamaz, her zaman sunucudan güncelini çeker.
+        const url = `kitaplar.json?t=${new Date().getTime()}`;
+        const response = await fetch(url, { cache: 'no-store' });
+        
+        if (response.ok) { 
+            books = await response.json(); 
+        }
+        renderBooks(books);
+    } catch (e) { 
+        console.error("Veri yüklenemedi:", e); 
+    }
+}
+
 // --- MARKET (LAZER) BİP SESİ ---
 function playBeep() {
     try {
@@ -46,11 +63,9 @@ function playBeep() {
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         
-        // "Square" dalgası gerçekçi bir lazer/elektronik cihaz sesi verir
         oscillator.type = 'square'; 
-        oscillator.frequency.setValueAtTime(2500, audioCtx.currentTime); // 2.5kHz frekans (Çok ince)
+        oscillator.frequency.setValueAtTime(2500, audioCtx.currentTime); 
         
-        // Sesi aç, 80 ms beklet ve anında kes (Çok hızlı bir bip)
         gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); 
         gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.08); 
         gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1); 
@@ -87,19 +102,12 @@ function applyViewMode() {
         viewIcon.textContent = 'view_list';
     }
 }
+
 viewToggleBtn.addEventListener('click', () => {
     currentView = currentView === 'grid' ? 'list' : 'grid';
     localStorage.setItem('hk_view', currentView);
     applyViewMode();
 });
-
-async function loadBooks() {
-    try {
-        const response = await fetch('kitaplar.json');
-        if (response.ok) { books = await response.json(); }
-        renderBooks(books);
-    } catch (e) { console.error("Veri yüklenemedi:", e); }
-}
 
 function getNextTagId() {
     let max = 0;
@@ -217,9 +225,11 @@ const cancelPress = (e) => {
     const card = e.target.closest('.book-card');
     if(card) card.classList.remove('active-press');
 };
+
 window.addEventListener('pointerup', cancelPress);
 bookGrid.addEventListener('pointermove', cancelPress);
 bookGrid.addEventListener('contextmenu', e => { if (isAdmin) e.preventDefault(); });
+
 document.getElementById('close-action-dialog').addEventListener('click', () => actionDialog.close());
 
 document.getElementById('delete-action-btn').addEventListener('click', () => {
@@ -363,9 +373,8 @@ function logBatchInfo(msg, type) {
 
 document.getElementById('batch-add-btn').addEventListener('click', () => {
     batchLogArea.innerHTML = '';
-    batchOverlay.style.display = 'flex'; // Tam ekran katmanı göster
+    batchOverlay.style.display = 'flex'; 
     
-    // Kamerayı başlat, mobil cihazlarda arka kamerayı (environment) zorla
     html5QrcodeScanner = new Html5QrcodeScanner("batch-reader", { 
         fps: 10, 
         qrbox: {width: 250, height: 150},
@@ -377,7 +386,7 @@ document.getElementById('batch-add-btn').addEventListener('click', () => {
         if (Date.now() - batchScanTime < 3000) return;
         batchScanTime = Date.now();
         
-        playBeep(); // Gerçekçi kare dalga bip!
+        playBeep(); 
         logBatchInfo(`${decodedText} aranıyor...`, 'info');
 
         if (books.some(b => b.isbn === decodedText)) {
@@ -402,7 +411,7 @@ document.getElementById('batch-add-btn').addEventListener('click', () => {
             renderBooks(books);
             logBatchInfo(`✔ Eklendi: ${bookData.title} (${newTag})`, 'success');
             
-            showToast(bookData.title, coverImage); // ÜST POPUP GÖSTERİMİ
+            showToast(bookData.title, coverImage); 
             if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         } else {
             logBatchInfo(`✖ Bulunamadı: ${decodedText}`, 'error');
@@ -413,7 +422,7 @@ document.getElementById('batch-add-btn').addEventListener('click', () => {
 
 document.getElementById('close-batch-overlay').addEventListener('click', () => {
     if(html5QrcodeScanner) { html5QrcodeScanner.clear(); html5QrcodeScanner = null; }
-    batchOverlay.style.display = 'none'; // Tam ekran katmanı gizle
+    batchOverlay.style.display = 'none'; 
 });
 
 document.getElementById('start-scanner-btn').addEventListener('click', () => {
