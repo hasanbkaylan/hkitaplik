@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasan'ın Kitaplığı</title>
+    
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=block" as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=block" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <script type="importmap">
+      { "imports": { "@material/web/": "https://esm.run/@material/web/" } }
+    </script>
+    <script type="module">import '@material/web/all.js';</script>
+</head>
+<body>
+
+    <!-- Başarı Pop-up'ı (Toast) - Artık Tüm Katmanların En Üstünde -->
+    <div id="toast" class="toast-container">
+        <img id="toast-cover" src="" alt="Kapak">
+        <div id="toast-text">
+            <strong style="color: #4CAF50;">✔ Başarıyla Eklendi</strong><br>
+            <span id="toast-title">Kitap Adı</span>
+        </div>
+    </div>
+
+    <!-- ÖZEL TAM EKRAN SERİ OKUMA KATMANI -->
+    <div id="batch-fullscreen-overlay" class="fullscreen-overlay" style="display: none;">
+        <div class="batch-header">
+            <h2 style="margin: 0; font-size: 18px; color: var(--primary-color);">Seri Barkod Modu</h2>
+            <md-icon-button id="close-batch-overlay">
+                <md-icon>close</md-icon>
+            </md-icon-button>
+        </div>
+        <!-- Kamera Ekranı -->
+        <div id="batch-reader" class="batch-reader-area"></div>
+        <!-- Log Ekranı -->
+        <div id="batch-log" class="batch-log-area">
+            <!-- Loglar buraya düşecek -->
+        </div>
+    </div>
+
+    <header class="app-bar">
+        <div class="logo-title">
+            <img src="logo.png" alt="HK Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzg1NTQwMCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjQwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgYWxpZ25tZW50LWJhc2VsaW5lPSJtaWRkbGUiPkhLPC90ZXh0Pjwvc3ZnPg=='">
+            <h1>Hasan'ın Kitaplığı</h1>
+        </div>
+        <div class="header-actions">
+            <md-icon-button id="view-toggle-btn">
+                <md-icon id="view-icon">view_list</md-icon>
+            </md-icon-button>
+            <md-icon-button id="admin-toggle-btn">
+                <md-icon id="admin-icon">lock</md-icon>
+            </md-icon-button>
+        </div>
+    </header>
+
+    <main>
+        <div class="search-container">
+            <md-outlined-text-field id="search-input" label="Kitap, yazar veya etiket (HK-001) ara" style="width: 100%;">
+                <md-icon slot="leading-icon">search</md-icon>
+            </md-outlined-text-field>
+        </div>
+        <div class="book-grid" id="book-grid"></div>
+    </main>
+
+    <!-- Bottom Action Bar -->
+    <div class="bottom-bar">
+        <md-filled-button id="random-btn" class="user-only">
+            <md-icon slot="icon">casino</md-icon>
+            Bugün Ne Okusam?
+        </md-filled-button>
+        
+        <md-filled-button id="batch-add-btn" class="admin-only" style="display: none;">
+            <md-icon slot="icon">barcode_scanner</md-icon>
+            Seri Ekle
+        </md-filled-button>
+
+        <md-filled-tonal-button id="add-book-btn" class="admin-only" style="display: none;">
+            <md-icon slot="icon">add</md-icon>
+            Tekil Ekle
+        </md-filled-tonal-button>
+
+        <md-outlined-button id="export-btn" class="admin-only" style="display: none;">
+            <md-icon slot="icon">download</md-icon>
+            İndir
+        </md-outlined-button>
+    </div>
+
+    <!-- Yönetici Girişi -->
+    <md-dialog id="admin-dialog">
+        <div slot="headline">Yönetici Girişi</div>
+        <form slot="content" id="admin-form" method="dialog">
+            <md-outlined-text-field id="admin-password" type="password" label="Yönetici Şifresi" style="width: 100%;"></md-outlined-text-field>
+            <div id="admin-error" style="color: var(--error-color); margin-top: 8px; font-size: 14px; display: none;">Hatalı şifre!</div>
+        </form>
+        <div slot="actions">
+            <md-text-button form="admin-form" value="cancel">İptal</md-text-button>
+            <md-filled-button id="admin-login-submit">Giriş Yap</md-filled-button>
+        </div>
+    </md-dialog>
+
+    <!-- Kart Basılı Tutma Menüsü -->
+    <md-dialog id="action-dialog">
+        <div slot="headline">Kitap İşlemleri</div>
+        <div slot="content" style="display: flex; flex-direction: column; gap: 10px;">
+            <md-filled-tonal-button id="edit-action-btn" style="width: 100%;">
+                <md-icon slot="icon">edit</md-icon> Kitabı Düzenle
+            </md-filled-tonal-button>
+            <md-filled-button id="delete-action-btn" style="width: 100%; --md-sys-color-primary: var(--error-color);">
+                <md-icon slot="icon">delete</md-icon> Kütüphaneden Sil
+            </md-filled-button>
+        </div>
+        <div slot="actions">
+            <md-text-button id="close-action-dialog">İptal</md-text-button>
+        </div>
+    </md-dialog>
+
+    <!-- Rastgele Kitap -->
+    <md-dialog id="random-dialog">
+        <div slot="headline">Bugün Ne Okusam?</div>
+        <div slot="content" class="random-content">
+            <div id="random-animation-area">
+                <md-icon style="font-size: 48px; color: var(--primary-color);">auto_awesome</md-icon>
+                <p id="random-status">Kütüphane taranıyor...</p>
+            </div>
+            <div id="random-result" style="display: none; text-align: center;">
+                <img id="random-cover" src="" alt="Kapak" style="height: 200px; border-radius: 8px; margin-bottom: 10px;">
+                <h3 id="random-title" style="margin: 0; color: var(--primary-color);"></h3>
+                <p id="random-author" style="margin: 5px 0;"></p>
+                <md-chip id="random-tag" label=""></md-chip>
+            </div>
+        </div>
+        <div slot="actions">
+            <md-text-button id="close-random">Kapat</md-text-button>
+            <md-filled-button id="reroll-btn">Başka Seç</md-filled-button>
+        </div>
+    </md-dialog>
+
+    <!-- Tekil Kitap Ekle/Düzenle -->
+    <md-dialog id="add-dialog">
+        <div slot="headline" id="add-dialog-title">Yeni Kitap Ekle</div>
+        <div slot="content" style="display: flex; flex-direction: column; gap: 16px; padding-top: 8px; overflow-y: auto;">
+            <md-outlined-text-field id="add-tag" label="Etiket No (Otomatik)" readonly></md-outlined-text-field>
+            
+            <div class="barcode-section" id="single-barcode-section">
+                <p style="font-size: 14px; margin: 0 0 8px 0;">ISBN Barkod Tara</p>
+                <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
+                <md-filled-tonal-button id="start-scanner-btn" style="width: 100%; margin-top: 8px;">
+                    <md-icon slot="icon">qr_code_scanner</md-icon> Kamerayı Aç
+                </md-filled-tonal-button>
+                <div class="divider">veya manuel doldur</div>
+            </div>
+
+            <md-outlined-text-field id="add-isbn" label="ISBN No"></md-outlined-text-field>
+            <md-filled-tonal-button id="fetch-api-btn">
+                <md-icon slot="icon">cloud_download</md-icon> Open Library'den Çek
+            </md-filled-tonal-button>
+
+            <md-outlined-text-field id="add-title" label="Kitap Adı"></md-outlined-text-field>
+            <md-outlined-text-field id="add-author" label="Yazar"></md-outlined-text-field>
+            <md-outlined-text-field id="add-publisher" label="Yayınevi"></md-outlined-text-field>
+            <md-outlined-text-field id="add-pages" type="number" label="Sayfa Sayısı"></md-outlined-text-field>
+
+            <div class="cover-upload-section">
+                <label for="add-cover-file" class="file-upload-btn">
+                    <md-icon>add_a_photo</md-icon> Özel Kapak Yükle
+                </label>
+                <input type="file" id="add-cover-file" accept="image/*" style="display: none;">
+                <img id="cover-preview" src="" style="display: none; height: 100px; margin-top: 10px; border-radius: 4px;">
+            </div>
+            <input type="hidden" id="add-cover-url">
+        </div>
+        <div slot="actions">
+            <md-text-button id="close-add-dialog">İptal</md-text-button>
+            <md-filled-button id="save-book-btn">Kaydet</md-filled-button>
+        </div>
+    </md-dialog>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
