@@ -2,7 +2,7 @@
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=HKitaplık&fontSize=60&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Kişisel%20Kütüphanem&descAlignY=58&descSize=20" width="100%" alt="HKitaplık Banner" />
 
-<img src="./logo.png" alt="HKitaplık Logo" width="110" />
+<img src="./logo-badge.png" alt="HKitaplık Logo" width="110" />
 
 <br/>
 
