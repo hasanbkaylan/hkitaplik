@@ -185,5 +185,38 @@
     "publisher": "Can Yayınları",
     "cover_url": "https://covers.openlibrary.org/b/id/13315467-L.jpg",
     "created_at": "2026-09-07"
+  },
+  {
+    "id": "841ab998-1c05-4293-982d-4c0870cd486d",
+    "tag_id": "HK-018",
+    "title": "Peygamberime İnanıyorum Çünkü",
+    "author": "Dr. Ayhan Mirza İnak",
+    "isbn": "9786059505444",
+    "page_count": 208,
+    "publisher": "Süeda Yayınları",
+    "cover_url": "https://covers.openlibrary.org/b/id/15252387-L.jpg",
+    "created_at": "2026-09-08"
+  },
+  {
+    "id": "f1cc5504-6ba1-4111-8ee1-9b47cc59c2b9",
+    "tag_id": "HK-019",
+    "title": "Kral Şakir - Dostumuz Doğa",
+    "author": "Haluk Can Dizdaroğlu, Özgür Öcalan",
+    "isbn": "9786256231306",
+    "page_count": 64,
+    "publisher": "Eksik Parça Yayınları",
+    "cover_url": "https://covers.openlibrary.org/b/id/15252385-L.jpg",
+    "created_at": "2026-09-08"
+  },
+  {
+    "id": "c61dd861-a152-48fa-ae05-4809318e6094",
+    "tag_id": "HK-020",
+    "title": "Elmadan Bakmak",
+    "author": "Dr. Ayhan Mirza İnak",
+    "isbn": "9786257575225",
+    "page_count": 112,
+    "publisher": "Süeda Yayınları",
+    "cover_url": "https://covers.openlibrary.org/b/id/15252390-L.jpg",
+    "created_at": "2026-09-08"
   }
 ]
